@@ -15,6 +15,9 @@ import ru.hse.spb.interpreter.model.PipeSplitCommand;
 import ru.hse.spb.interpreter.model.Token;
 
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,24 @@ public class InterpreterImpl implements Interpreter {
                 return Optional.of(command.apply(token, prevResult));
             }
         }
-        return Optional.empty();
+        try {
+            final Process process = Runtime.getRuntime().exec(token);
+            try {
+                process.waitFor();
+            } catch (InterruptedException e) {
+                //todo лог
+            }
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()));
+            final StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine())!= null) {
+                stringBuilder.append(line).append("\n");
+            }
+            return Optional.of(new BashCommandResult(stringBuilder.toString()));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+
     }
 }
