@@ -1,6 +1,8 @@
 package ru.hse.spb.interpreter.command.impl;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.hse.spb.interpreter.command.BashCommand;
 import ru.hse.spb.interpreter.model.BashCommandResult;
@@ -13,6 +15,8 @@ import java.util.regex.Pattern;
 @Component
 public class Echo implements BashCommand {
     private static final Pattern COMMAND_PATTERN = Pattern.compile("echo(\\s+|$)");
+    private static final Logger LOG = LoggerFactory.getLogger(Echo.class);
+
     @Override
     public boolean isFits(final String inputString) {
         return getData(inputString.toLowerCase()).isPresent();
@@ -22,10 +26,9 @@ public class Echo implements BashCommand {
     @Nonnull
     public BashCommandResult apply(final String inputString) {
         final Optional<String> dataOpt = getData(inputString);
-        //TODO запись в лог
         return dataOpt.map(BashCommandResult::new).orElseGet(
                 () -> {
-                    //TODO запись в лог
+                    LOG.warn("unable to apply command echo to " + inputString);
                     return new BashCommandResult("");
                 });
     }

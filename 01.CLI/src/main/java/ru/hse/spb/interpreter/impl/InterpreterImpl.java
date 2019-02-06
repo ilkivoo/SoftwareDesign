@@ -1,5 +1,7 @@
 package ru.hse.spb.interpreter.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +35,7 @@ public class InterpreterImpl implements Interpreter {
     private final List<BashCommand> commands;
     private final PrintStream out;
     private final Scanner in;
+    private static final Logger LOG = LoggerFactory.getLogger(Preprocessor.class);
 
     @Inject
     public InterpreterImpl(final List<BashCommand> commands,
@@ -66,7 +69,7 @@ public class InterpreterImpl implements Interpreter {
                     final String commandWithReplacement = preprocessor.run(inputCommand.getEntities());
                     final Optional<BashCommandResult>  response = findCommand(commandWithReplacement, prevResult);
                     if (!response.isPresent()) {
-                        out.println("command not found: " + inputCommand);
+                        out.println("command not found: " + commandWithReplacement);
                     }
                     prevResult = response.orElseGet(() -> new BashCommandResult(""));
                 }
@@ -86,7 +89,7 @@ public class InterpreterImpl implements Interpreter {
             try {
                 process.waitFor();
             } catch (InterruptedException e) {
-                //todo лог
+                LOG.warn("Process interrupted", e);
             }
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -97,6 +100,7 @@ public class InterpreterImpl implements Interpreter {
             }
             return Optional.of(new BashCommandResult(stringBuilder.toString()));
         } catch (IOException e) {
+            LOG.error("Unable to read data from process", e);
             return Optional.empty();
         }
 

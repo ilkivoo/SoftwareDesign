@@ -1,5 +1,7 @@
 package ru.hse.spb.interpreter.command.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.hse.spb.interpreter.command.BashCommand;
 import ru.hse.spb.interpreter.model.BashCommandResult;
@@ -25,6 +27,7 @@ import static ru.hse.spb.interpreter.command.util.BashCommandUtil.readFiles;
 public class Cat implements BashCommand {
     private static final Pattern COMMAND_PATTERN = Pattern.compile("cat(\\s+|$)");
     private final InputStream defaultInputStream;
+    private static final Logger LOG = LoggerFactory.getLogger(Cat.class);
 
     @Inject
     public Cat(final InputStream defaultInputStream) {
@@ -41,7 +44,7 @@ public class Cat implements BashCommand {
     public BashCommandResult apply(final String inputString) {
         final Optional<List<String>> dataOpt = getData(inputString);
         if (!dataOpt.isPresent()) {
-            //TODO запись в лог
+            LOG.warn("unable to apply command cat to " + inputString);
             return new BashCommandResult("");
         }
         final Map<String, InputStream> inputStreamByFileName =
@@ -56,7 +59,7 @@ public class Cat implements BashCommand {
     public BashCommandResult apply(final String inputString, final BashCommandResult predResult) {
         final Optional<List<String>> dataOpt = getData(inputString);
         if (!dataOpt.isPresent()) {
-            //TODO запись в лог
+            LOG.warn("unable to apply command cat to " + inputString);
             return new BashCommandResult("");
         }
         if (getNonEmptyString(dataOpt.get()).size() == 0

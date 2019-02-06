@@ -15,8 +15,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BashCommandUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(BashCommandUtil.class);
 
     @Nonnull
     public static Map<String, InputStream> getInputStreams(final List<String> fileNames,
@@ -31,7 +34,7 @@ public class BashCommandUtil {
                         try {
                             inputStreamMap.put(fileName, new FileInputStream(fileName));
                         } catch (FileNotFoundException e) {
-                            //TODO запись в лог
+                            LOG.warn("file " + fileName + " not found", e);
                         }
                     });
         }
@@ -47,7 +50,7 @@ public class BashCommandUtil {
                         textForInputStreams.put(fileName,
                                 IOUtils.toString(inputStreamMap.get(fileName)));
                     } catch (IOException e) {
-                        //todo запись в лог
+                        LOG.error("Unable to read data from " + fileName, e);
                     }
                 }
         );

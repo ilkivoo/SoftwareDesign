@@ -71,24 +71,24 @@ public class Tokenizer {
         for (char curSymbol : input.toCharArray()) {
             if (curSymbol == '\'') {
                 if (isPrimeOpen) {
-                    entities.add(new Entity(EntityType.PART_IN_PRIME, entityBuilder.toString()));
+                    putEntity(entities,EntityType.PART_IN_PRIME, entityBuilder.toString());
                     entityBuilder.setLength(0);
                     isPrimeOpen = false;
                 } else if (!isDoublePrimeOpen && countBackslash % 2 == 0) {
                     isPrimeOpen = true;
-                    entities.add(new Entity(EntityType.SIMPLE_PART, entityBuilder.toString()));
+                    putEntity(entities,EntityType.SIMPLE_PART, entityBuilder.toString());
                     entityBuilder.setLength(0);
                 } else {
                     entityBuilder.append(curSymbol);
                 }
             } else if (curSymbol == '\"') {
                 if (isDoublePrimeOpen && countBackslash % 2 == 0) {
-                    entities.add(new Entity(EntityType.PART_IN_DOUBLE_PRIME, entityBuilder.toString()));
+                    putEntity(entities,EntityType.PART_IN_DOUBLE_PRIME, entityBuilder.toString());
                     entityBuilder.setLength(0);
                     isDoublePrimeOpen = false;
                 } else if (!isPrimeOpen && !isDoublePrimeOpen && countBackslash % 2 == 0) {
                     isDoublePrimeOpen = true;
-                    entities.add(new Entity(EntityType.SIMPLE_PART, entityBuilder.toString()));
+                    putEntity(entities,EntityType.SIMPLE_PART, entityBuilder.toString());
                     entityBuilder.setLength(0);
                 } else {
                     entityBuilder.append(curSymbol);
@@ -101,14 +101,22 @@ public class Tokenizer {
 
         if (entityBuilder.length() > 0) {
             if (isPrimeOpen) {
-                entities.add(new Entity(EntityType.PART_IN_PRIME, entityBuilder.toString()));
+                putEntity(entities,EntityType.PART_IN_PRIME, entityBuilder.toString());
             } else if (isDoublePrimeOpen) {
-                entities.add(new Entity(EntityType.PART_IN_DOUBLE_PRIME, entityBuilder.toString()));
+                putEntity(entities,EntityType.PART_IN_DOUBLE_PRIME, entityBuilder.toString());
             } else {
-                entities.add(new Entity(EntityType.SIMPLE_PART, entityBuilder.toString()));
+                putEntity(entities,EntityType.SIMPLE_PART, entityBuilder.toString());
             }
         }
         return entities;
+    }
+    
+    private void putEntity(final List<Entity> entities,
+                           final EntityType newEntityType, 
+                           final String newEntityValue) {
+        if (newEntityValue.length() > 0) {
+            entities.add(new Entity(newEntityType, newEntityValue));
+        }
     }
 
     private boolean isTokenFinish(char curSymbol,

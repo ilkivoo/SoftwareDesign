@@ -1,5 +1,7 @@
 package ru.hse.spb.interpreter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.hse.spb.interpreter.model.Entity;
@@ -19,6 +21,7 @@ public class Preprocessor {
     private final Map<String, String> envVariables;
     private static final String IDENTIFIER_PATTERN = "[_a-zA-Z]([_a-zA-Z0-9])*";
     private static final String REPLACEMENT_PATTERN = "(^|[^\\\\])(\\\\\\\\)*" + "\\$" + IDENTIFIER_PATTERN;
+    private static final Logger LOG = LoggerFactory.getLogger(Preprocessor.class);
 
     public Preprocessor(@Qualifier("envVariables") final Map<String, String> envVariables) {
         this.envVariables = envVariables;
@@ -95,7 +98,8 @@ public class Preprocessor {
             final String result = input.replaceAll("\\$" + ident, envVariables.getOrDefault(ident, ""));
             return Optional.of(result);
         } catch (Exception e) {
-            //TODO запись в лог
+            LOG.error("Impossible to replace "+ "\\$" + ident + " with" +
+                    envVariables.getOrDefault(ident, "") + " in " + input, e);
             return Optional.empty();
         }
     }

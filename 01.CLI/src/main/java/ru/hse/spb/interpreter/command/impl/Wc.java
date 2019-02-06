@@ -1,5 +1,7 @@
 package ru.hse.spb.interpreter.command.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.hse.spb.interpreter.command.BashCommand;
 import ru.hse.spb.interpreter.model.BashCommandResult;
@@ -26,6 +28,7 @@ import static ru.hse.spb.interpreter.command.util.BashCommandUtil.readFiles;
 public class Wc implements BashCommand {
     private final InputStream defaultInputStream;
     private static final Pattern COMMAND_PATTERN = Pattern.compile("wc(\\s+|$)");
+    private static final Logger LOG = LoggerFactory.getLogger(Wc.class);
 
     @Inject
     public Wc(final InputStream defaultInputStream) {
@@ -42,7 +45,7 @@ public class Wc implements BashCommand {
     public BashCommandResult apply(String inputString) {
         final Optional<List<String>> dataOpt = getData(inputString);
         if (!dataOpt.isPresent()) {
-            //TODO запись в лог
+            LOG.warn("unable to apply command wc to " + inputString);
             return new BashCommandResult("");
         }
         final Map<String, InputStream> inputStreamByFileName = getInputStreams(dataOpt.get(), defaultInputStream);
@@ -56,7 +59,7 @@ public class Wc implements BashCommand {
     public BashCommandResult apply(final String inputString, final BashCommandResult predResult) {
         final Optional<List<String>> dataOpt = getData(inputString);
         if (!dataOpt.isPresent()) {
-            //TODO запись в лог
+            LOG.warn("unable to apply command wc to " + inputString);
             return new BashCommandResult("");
         }
         if (getNonEmptyString(dataOpt.get()).size() == 0
@@ -84,7 +87,6 @@ public class Wc implements BashCommand {
 
     private String getResult(final Map<String, String> textByFileName) {
         if (textByFileName== null) {
-            //todo запись в лог
             return "";
         }
         return textByFileName.keySet().stream()
