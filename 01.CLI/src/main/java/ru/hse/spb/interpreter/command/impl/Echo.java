@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 @Component
 public class Echo implements BashCommand {
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("echo(\\s+|$)");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*echo(\\s+|$)");
     private static final Logger LOG = LoggerFactory.getLogger(Echo.class);
 
     @Override

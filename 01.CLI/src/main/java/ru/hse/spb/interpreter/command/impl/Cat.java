@@ -25,7 +25,7 @@ import static ru.hse.spb.interpreter.command.util.BashCommandUtil.readFiles;
 
 @Component
 public class Cat implements BashCommand {
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("cat(\\s+|$)");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*cat(\\s+|$)");
     private final InputStream defaultInputStream;
     private static final Logger LOG = LoggerFactory.getLogger(Cat.class);
 

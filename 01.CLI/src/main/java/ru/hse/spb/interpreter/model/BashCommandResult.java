@@ -1,6 +1,5 @@
 package ru.hse.spb.interpreter.model;
 
-import ru.hse.spb.interpreter.command.BashCommand;
 
 import java.util.Objects;
 
@@ -40,7 +39,7 @@ public class BashCommandResult {
 
     @Override
     public String toString() {
-        return "Token{" + "\n" +
+        return "BashCommandResult{" + "\n" +
                 "   result=" + result + "\n" +
                 '}';
     }

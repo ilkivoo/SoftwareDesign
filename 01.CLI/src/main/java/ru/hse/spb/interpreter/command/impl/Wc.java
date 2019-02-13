@@ -27,7 +27,7 @@ import static ru.hse.spb.interpreter.command.util.BashCommandUtil.readFiles;
 @Component
 public class Wc implements BashCommand {
     private final InputStream defaultInputStream;
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("wc(\\s+|$)");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*wc(\\s+|$)");
     private static final Logger LOG = LoggerFactory.getLogger(Wc.class);
 
     @Inject
