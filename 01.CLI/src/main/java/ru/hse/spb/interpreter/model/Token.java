@@ -31,7 +31,7 @@ public class Token {
     @Override
     public String toString() {
         return "Token{" + "\n" +
-                "   commands=" + commands.toString() + "\n" +
+                "   commands=" + commands + "\n" +
                 '}';
     }
 

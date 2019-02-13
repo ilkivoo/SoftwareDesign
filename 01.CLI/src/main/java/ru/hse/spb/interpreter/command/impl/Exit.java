@@ -5,14 +5,17 @@ import ru.hse.spb.interpreter.command.BashCommand;
 import ru.hse.spb.interpreter.model.BashCommandResult;
 
 import javax.annotation.Nonnull;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class Exit implements BashCommand {
-
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*exit(\\s+|$)");
     @Override
     public boolean isFits(String inputString) {
         final String[] words = inputString.split("\\s+");
-        return (words.length > 0) && (words[0].equalsIgnoreCase("exit"));
+        final Matcher matcher = COMMAND_PATTERN.matcher(inputString);
+        return matcher.find();
     }
 
     @Nonnull

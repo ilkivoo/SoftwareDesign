@@ -36,7 +36,7 @@ public class PipeSplitCommand {
     @Override
     public String toString() {
         return "PipeSplitCommand{" + "\n" +
-                "   entities=" + entities.toString() + "\n" +
+                "   entities=" + entities + "\n" +
                 '}';
     }
 }

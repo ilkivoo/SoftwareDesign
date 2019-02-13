@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 @Component
 public class Pwd implements BashCommand {
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("pwd(\\s+|$)");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*pwd(\\s+|$)");
 
     @Override
     public boolean isFits(String inputString) {
@@ -25,6 +25,6 @@ public class Pwd implements BashCommand {
     @Nonnull
     @Override
     public BashCommandResult apply(String inputString) {
-        return new BashCommandResult(new File(".").getAbsolutePath());
+        return new BashCommandResult(new File("").getAbsolutePath());
     }
 }
