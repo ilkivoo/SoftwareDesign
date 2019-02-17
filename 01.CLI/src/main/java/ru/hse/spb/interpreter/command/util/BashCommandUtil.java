@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +16,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.hse.spb.interpreter.model.cli.GrepCliParams;
 
 public class BashCommandUtil {
     private static final Logger LOG = LoggerFactory.getLogger(BashCommandUtil.class);
@@ -44,7 +54,7 @@ public class BashCommandUtil {
     @Nonnull
     public static Map<String, String> readFiles(final Map<String, InputStream> inputStreamMap) {
         final Map<String, String> textForInputStreams = new HashMap<>();
-        inputStreamMap.keySet().stream().forEach(
+        inputStreamMap.keySet().forEach(
                 fileName -> {
                     try {
                         textForInputStreams.put(fileName,
@@ -57,6 +67,7 @@ public class BashCommandUtil {
         return textForInputStreams;
     }
 
+
     @Nonnull
     public static List<String> getNonEmptyString(final List<String> datas) {
         if (datas == null || datas.size() == 0) {
@@ -65,6 +76,30 @@ public class BashCommandUtil {
         return datas.stream()
                 .filter(BashCommandUtil::isNonEmpty)
                 .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    public static CommandLine getCommandLine(@Nonnull final String[] args,
+                                             @Nonnull final List<Option> cmdOptions) throws ParseException {
+        Options options = new Options();
+        for (Option cmdOption : cmdOptions) {
+            options.addOption(cmdOption);
+        }
+        CommandLineParser parser = new DefaultParser();
+        return parser.parse(options, args);
+    }
+
+    @Nonnull
+    public static List<String> getLines(@Nonnull final String text) {
+        return Arrays.asList(text.split("(\\n)+"));
+    }
+    public static void printHelp(@Nonnull final List<Option> cmdOptions) {
+        Options options = new Options();
+        for (Option cmdOption : cmdOptions) {
+            options.addOption(cmdOption);
+        }
+        final HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.printHelp("utility-name", options);
     }
 
     private static boolean isNonEmpty(String data) {

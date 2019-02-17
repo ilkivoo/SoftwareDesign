@@ -1,6 +1,7 @@
 package ru.hse.spb.interpreter.command;
 
 
+import org.apache.commons.cli.ParseException;
 import ru.hse.spb.interpreter.model.BashCommandResult;
 
 import javax.annotation.Nonnull;

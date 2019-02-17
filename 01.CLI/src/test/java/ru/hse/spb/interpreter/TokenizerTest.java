@@ -9,6 +9,8 @@ import ru.hse.spb.interpreter.model.Token;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -93,5 +95,15 @@ public class TokenizerTest {
         assertEquals(correct, tokenizer.getTokens("echo 123| cat \"1.txt\""));
     }
 
+    @Test
+    public void test() {
+        String input = "aaa aaa";
+        Pattern pattern = Pattern.compile("(a\\b)");
+        Matcher matcher = pattern.matcher(input);
+
+        while (matcher.find()) {
+            System.out.println("Found this wiki word: " + matcher.group());
+        }
+    }
 
 }
