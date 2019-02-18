@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +25,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.hse.spb.interpreter.model.cli.GrepCliParams;
 
 public class BashCommandUtil {
     private static final Logger LOG = LoggerFactory.getLogger(BashCommandUtil.class);
@@ -49,6 +47,14 @@ public class BashCommandUtil {
                     });
         }
         return inputStreamMap;
+    }
+
+    public static boolean isLineMatch(final String line, @Nonnull Pattern pattern) {
+        if (line == null) {
+            return false;
+        }
+        Matcher matcher = pattern.matcher(line);
+        return matcher.find();
     }
 
     @Nonnull
@@ -90,7 +96,10 @@ public class BashCommandUtil {
     }
 
     @Nonnull
-    public static List<String> getLines(@Nonnull final String text) {
+    public static List<String> getLines(final String text) {
+        if (text == null) {
+            return new ArrayList<>();
+        }
         return Arrays.asList(text.split("(\\n)+"));
     }
     public static void printHelp(@Nonnull final List<Option> cmdOptions) {

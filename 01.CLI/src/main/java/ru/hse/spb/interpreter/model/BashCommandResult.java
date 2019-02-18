@@ -18,6 +18,9 @@ public class BashCommandResult {
         return result == null ? defaultString : result;
     }
 
+    public boolean isEmpty() {
+        return result == null || "".equals(result);
+    }
 
     public BashCommandResult emptyResult() {
         return new BashCommandResult("");

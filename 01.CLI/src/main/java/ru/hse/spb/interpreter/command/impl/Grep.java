@@ -11,6 +11,8 @@ import ru.hse.spb.interpreter.model.cli.GrepCliParams;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -20,13 +22,14 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static ru.hse.spb.interpreter.command.util.BashCommandUtil.getCommandLine;
 import static ru.hse.spb.interpreter.command.util.BashCommandUtil.getInputStreams;
 import static ru.hse.spb.interpreter.command.util.BashCommandUtil.getLines;
+import static ru.hse.spb.interpreter.command.util.BashCommandUtil.isLineMatch;
 import static ru.hse.spb.interpreter.command.util.BashCommandUtil.printHelp;
 import static ru.hse.spb.interpreter.command.util.BashCommandUtil.readFiles;
 
 @Service
 public class Grep implements BashCommand {
     private static final Logger LOG = LoggerFactory.getLogger(Grep.class);
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*grep(\\s+)[^\\s]*");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("^(\\s)*grep(\\s+)[^\\s]");
     private final InputStream defaultInputStream;
 
     @Inject
@@ -46,6 +49,12 @@ public class Grep implements BashCommand {
     @Nonnull
     @Override
     public BashCommandResult apply(String inputString) {
+        return apply(inputString, new BashCommandResult(""));
+    }
+
+    @Nonnull
+    @Override
+    public BashCommandResult apply(String inputString, BashCommandResult prevResult) {
         if (!isFits(inputString)) {
             LOG.error("Unable to apply grep");
             return new BashCommandResult("");
@@ -60,61 +69,82 @@ public class Grep implements BashCommand {
             printHelp(GrepCliParams.cmdOptions);
             return new BashCommandResult("");
         }
-        if (grepCliParams.getFileNames() == null || grepCliParams.getFileNames().size() == 0) {
-            printHelp(GrepCliParams.cmdOptions);
-            return new BashCommandResult("");
-        }
 
-        final List<String> fileNames = grepCliParams.getFileNames();
-        final Map<String, InputStream> inputStreamByFileName =
-                getInputStreams(fileNames, defaultInputStream);
-        final Map<String, String> textByFileName = readFiles(inputStreamByFileName);
-        return new BashCommandResult(getMatcher(textByFileName, grepCliParams));
+        final Map<String, String> textByFileName = new HashMap<>();
+
+        if (!prevResult.isEmpty()) {
+            textByFileName.put("", prevResult.getResult());
+        } else {
+            final List<String> fileNames = grepCliParams.getFileNames();
+            final Map<String, InputStream> inputStreamByFileName =
+                    getInputStreams(fileNames, defaultInputStream);
+            textByFileName.putAll(readFiles(inputStreamByFileName));
+        }
+        return new BashCommandResult(getMatchedText(textByFileName, grepCliParams));
     }
 
 
-    private String getMatcher(final Map<String, String> textByFileName,
-                              final GrepCliParams grepCliParams) {
+    private String getMatchedText(final Map<String, String> textByFileName,
+                                  final GrepCliParams grepCliParams) {
         if (grepCliParams == null || textByFileName == null) {
             return "";
         }
-        final String around = grepCliParams.isWordRegexp()
-                ? "(\\s)+"
-                : "";
-        final int ignoreCase = grepCliParams.isIgnoreCase()
-                ? CASE_INSENSITIVE
-                : 0;
-        final Pattern pattern = Pattern.compile(around + grepCliParams.getRegexp() + around, ignoreCase);
-        final StringBuilder stringBuilder = new StringBuilder();
-        final int countLines = grepCliParams.getAfterContext() == null ? 0 : grepCliParams.getAfterContext();
-        int countLinesToAdd = 0;
+        Pattern pattern = getPattern(grepCliParams);
+        final boolean printFileName = textByFileName.size() > 1;
+        final int countLines = grepCliParams.getAfterContext() == null
+                ? 0
+                : grepCliParams.getAfterContext();
+        final List<String> resultLines = new ArrayList<>();
         for (String fileName : textByFileName.keySet()) {
             final String text = textByFileName.getOrDefault(fileName, "");
-            final List<String> lines = getLines(text);
-            for (String line : lines) {
-                if (countLinesToAdd > 0) {
-                    stringBuilder.append(line);
-                    countLinesToAdd--;
+            resultLines.addAll(getMatchedLines(text,
+                    pattern,
+                    printFileName ? fileName + ": " : "",
+                    countLines));
+        }
+        return String.join("\n", resultLines);
+    }
+
+    private List<String> getMatchedLines(final String text,
+                                         @Nonnull final Pattern pattern,
+                                         final String prefix,
+                                         final int countLines) {
+        int countLinesToAdd = 0;
+        final String linePrefix = prefix == null ? "" : prefix;
+        if (text == null || text.equals("")) {
+            return new ArrayList<>();
+        }
+        List<String> matchedLines = new ArrayList<>();
+        final List<String> lines = getLines(text);
+        for (String line : lines) {
+            if (countLinesToAdd > 0) {
+                matchedLines.add(linePrefix + line);
+                countLinesToAdd--;
+            } else {
+                if (isLineMatch(line, pattern)) {
+                    matchedLines.add(linePrefix + line);
+                    countLinesToAdd = countLines > 0 ? countLines : 0;
                 } else {
-                    if (match(line, pattern)) {
-                        stringBuilder.append(line);
-                        countLinesToAdd = countLines;
-                    } else {
-                        countLinesToAdd = 0;
-                    }
+                    countLinesToAdd = 0;
                 }
             }
         }
-        return stringBuilder.toString();
+        return matchedLines;
     }
 
-    private boolean match(final String line, @Nonnull Pattern pattern) {
-        if (line == null) {
-            return false;
+    @Nonnull
+    private Pattern getPattern(final GrepCliParams grepCliParams) {
+        if (grepCliParams == null) {
+            return Pattern.compile(".*");
         }
-        Matcher matcher = pattern.matcher(line);
-        return matcher.find();
-    }
+        final String around = grepCliParams.isWordRegexp()
+                ? "(^|\\s|$)+"
+                : "";
 
+        final int ignoreCase = grepCliParams.isIgnoreCase()
+                ? CASE_INSENSITIVE
+                : 0;
+        return Pattern.compile(around + grepCliParams.getRegexp() + around, ignoreCase);
+    }
 
 }
