@@ -24,7 +24,7 @@ public class WcTest {
     @Test
     public void testApply() throws IOException {
         final Wc wc = new Wc(null);
-        assertEquals("1  1  37  src/test/resources/1.txt", wc.apply("wc src/test/resources/1.txt").getResult());
+        assertEquals("1  1  8  src/test/resources/1.txt", wc.apply("wc src/test/resources/1.txt").getResult());
     }
 
     @Test

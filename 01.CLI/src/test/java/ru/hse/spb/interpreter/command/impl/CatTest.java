@@ -26,7 +26,7 @@ public class CatTest {
     @Test
     public void testApply() {
         final Cat cat = new Cat(null);
-        assertEquals("Приветики-Конфетики", cat.apply("cat src/test/resources/1.txt").getResult());
+        assertEquals("lalalala", cat.apply("cat src/test/resources/1.txt").getResult());
     }
 
     @Test
