@@ -1,0 +1,28 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <context:component-scan base-package="ru.hse.spb.interpreter"/>
+
+    <bean id="envVariables" class="java.util.HashMap">
+        <constructor-arg>
+            <map key-type="java.lang.String" value-type="java.lang.String"/>
+        </constructor-arg>
+    </bean>
+
+    <util:constant id = "out" static-field="java.lang.System.out" />
+    <util:constant id = "in" static-field="java.lang.System.in" />
+
+    <bean id="printStream" class="java.io.PrintStream">
+        <constructor-arg index="0" value="#{out}"/>
+    </bean>
+
+    <bean id="scanner" class="java.util.Scanner">
+        <constructor-arg index="0" value="#{in}"/>
+    </bean>
+</beans>
