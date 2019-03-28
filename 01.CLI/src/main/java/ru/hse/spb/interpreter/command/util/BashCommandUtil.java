@@ -42,7 +42,7 @@ public class BashCommandUtil {
     }
 
     @Nonnull
-    public static Map<String, String> readFiles(final Map<String, InputStream> inputStreamMap) {
+    public static Map<String, String> readFiles(@Nonnull final Map<String, InputStream> inputStreamMap) {
         final Map<String, String> textForInputStreams = new HashMap<>();
         inputStreamMap.keySet().stream().forEach(
                 fileName -> {
@@ -67,12 +67,17 @@ public class BashCommandUtil {
                 .collect(Collectors.toList());
     }
 
-    private static boolean isNonEmpty(String data) {
+    @Nonnull
+    public static String cut(@Nonnull final String input,
+                             final int start,
+                             final int end) {
+        return input.substring(0, start) + input.substring(end);
+    }
+
+    public static boolean isNonEmpty(String data) {
         if (data == null) {
             return false;
         }
-        final Pattern pattern = Pattern.compile("^\\s*$");
-        final Matcher matcher = pattern.matcher(data);
-        return !matcher.find();
+        return !data.matches("^(\\s)*$");
     }
 }

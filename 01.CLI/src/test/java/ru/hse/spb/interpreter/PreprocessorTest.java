@@ -11,7 +11,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class PreprocessorTest {
-    @Test
+    /*@Test
     public void testReplaceVariable() {
         final Map<String, String> variables = new HashMap<>();
         variables.put("lalala", "123");
@@ -35,6 +35,6 @@ public class PreprocessorTest {
                 new Entity(EntityType.SIMPLE_PART, " "),
                 new Entity(EntityType.PART_IN_PRIME, "$lalala"))));
         assertEquals(correctCommand, returnCommand);
-    }
+    }*/
 
 }

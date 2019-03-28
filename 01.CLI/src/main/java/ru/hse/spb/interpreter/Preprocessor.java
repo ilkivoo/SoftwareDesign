@@ -9,6 +9,7 @@ import ru.hse.spb.interpreter.model.EntityType;
 
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,23 +19,31 @@ import java.util.stream.Collectors;
 
 @Service
 public class Preprocessor {
-    private final Map<String, String> envVariables;
     private static final String IDENTIFIER_PATTERN = "[_a-zA-Z]([_a-zA-Z0-9])*";
     private static final String REPLACEMENT_PATTERN = "(^|[^\\\\])(\\\\\\\\)*" + "\\$" + IDENTIFIER_PATTERN;
     private static final Logger LOG = LoggerFactory.getLogger(Preprocessor.class);
+    private final Map<String, String> envVariables;
 
     public Preprocessor(@Qualifier("envVariables") final Map<String, String> envVariables) {
         this.envVariables = envVariables;
     }
 
-    public String run(final List<Entity> entities) {
-        return entities == null
-                ? ""
-                : entities.stream()
-                .map(entity -> (entity.getType() != EntityType.PART_IN_PRIME)
-                        ? replaceSpecialSymbols(replaceValues(entity.getValue()))
-                        : entity.getValue())
-                .collect(Collectors.joining());
+    @Nonnull
+    public List<Entity> run(final List<Entity> entities) {
+        final List<Entity> result = new ArrayList<>();
+        if (entities == null || entities.size() == 0) {
+            return result;
+        }
+        for (final Entity entity : entities) {
+            if (entity.getType().isNeedReplace()) {
+                result.add(new Entity(entity.getType(),
+                        replaceSpecialSymbols(
+                                replaceValues(entity.getValue()))));
+            } else {
+                result.add(entity);
+            }
+        }
+        return result;
     }
 
     @Nonnull
@@ -98,7 +107,7 @@ public class Preprocessor {
             final String result = input.replaceAll("\\$" + ident, envVariables.getOrDefault(ident, ""));
             return Optional.of(result);
         } catch (Exception e) {
-            LOG.error("Impossible to replace "+ "\\$" + ident + " with" +
+            LOG.error("Impossible to replace " + "\\$" + ident + " with" +
                     envVariables.getOrDefault(ident, "") + " in " + input, e);
             return Optional.empty();
         }

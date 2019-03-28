@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import ru.hse.spb.interpreter.Interpreter;
@@ -13,6 +14,7 @@ import ru.hse.spb.interpreter.Tokenizer;
 import ru.hse.spb.interpreter.command.Assignment;
 import ru.hse.spb.interpreter.command.BashCommand;
 import ru.hse.spb.interpreter.model.BashCommandResult;
+import ru.hse.spb.interpreter.model.Entity;
 import ru.hse.spb.interpreter.model.PipeSplitCommand;
 import ru.hse.spb.interpreter.model.Token;
 
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Component("Interpreter")
 public class InterpreterImpl implements Interpreter {
@@ -61,15 +64,16 @@ public class InterpreterImpl implements Interpreter {
             final String input = in.nextLine();
             final List<Token> tokens = tokenizer.getTokens(input);
             for (Token token : tokens) {
-                BashCommandResult prevResult= new BashCommandResult(null);
-                for (PipeSplitCommand inputCommand : token.getcommands()) {
+                BashCommandResult prevResult = new BashCommandResult(null);
+                for (PipeSplitCommand inputCommand : token.getCommands()) {
                     if (assignment.updateVariables(inputCommand.getEntities())) {
                         continue;
                     }
-                    final String commandWithReplacement = preprocessor.run(inputCommand.getEntities());
-                    final Optional<BashCommandResult>  response = findCommand(commandWithReplacement, prevResult);
+                    final List<Entity> commandWithReplacement = preprocessor.run(inputCommand.getEntities());
+                    final Optional<BashCommandResult> response = findCommand(commandWithReplacement, prevResult);
                     if (!response.isPresent()) {
-                        out.println("command not found: " + commandWithReplacement);
+                        out.println("command not found: " + split(commandWithReplacement));
+                        continue;
                     }
                     prevResult = response.orElseGet(() -> new BashCommandResult(""));
                 }
@@ -78,14 +82,17 @@ public class InterpreterImpl implements Interpreter {
         }
     }
 
-    private Optional<BashCommandResult> findCommand(final String token, final BashCommandResult prevResult) {
+    private Optional<BashCommandResult> findCommand(@Nonnull final List<Entity> commandEntities, final BashCommandResult prevResult) {
         for (BashCommand command : commands) {
-            if (command.isFits(token)) {
-                return Optional.of(command.apply(token, prevResult));
+            if (command.isFits(commandEntities)) {
+                return Optional.of(command.apply(commandEntities, prevResult));
             }
         }
         try {
-            final Process process = Runtime.getRuntime().exec(token);
+            final String commandString = commandEntities.stream()
+                    .map(Entity::getValue)
+                    .collect(Collectors.joining(""));
+            final Process process = Runtime.getRuntime().exec(commandString);
             try {
                 process.waitFor();
             } catch (InterruptedException e) {
@@ -95,7 +102,7 @@ public class InterpreterImpl implements Interpreter {
                     new BufferedReader(new InputStreamReader(process.getInputStream()));
             final StringBuilder stringBuilder = new StringBuilder();
             String line;
-            while ((line = reader.readLine())!= null) {
+            while ((line = reader.readLine()) != null) {
                 stringBuilder.append(line).append("\n");
             }
             return Optional.of(new BashCommandResult(stringBuilder.toString()));
@@ -104,5 +111,10 @@ public class InterpreterImpl implements Interpreter {
             return Optional.empty();
         }
 
+    }
+
+    @Nonnull
+    final String split(@Nonnull final List<Entity> entities) {
+        return entities.stream().map(Entity::getValue).collect(Collectors.joining(""));
     }
 }

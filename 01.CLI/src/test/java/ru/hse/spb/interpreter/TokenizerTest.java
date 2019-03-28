@@ -1,6 +1,8 @@
 package ru.hse.spb.interpreter;
 
 import org.junit.Test;
+import ru.hse.spb.interpreter.exceptions.TokenizerException;
+import ru.hse.spb.interpreter.impl.TokenizerImpl;
 import ru.hse.spb.interpreter.model.Entity;
 import ru.hse.spb.interpreter.model.EntityType;
 import ru.hse.spb.interpreter.model.PipeSplitCommand;
@@ -16,7 +18,7 @@ public class TokenizerTest {
 
     @Test
     public void testGetTokensWithoutPrimes() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new TokenizerImpl();
         List<Token> correct = Collections.singletonList(new Token(
                 Collections.singletonList(new PipeSplitCommand(
                         Collections.singletonList(new Entity(EntityType.SIMPLE_PART, "echo 123"))
@@ -27,7 +29,7 @@ public class TokenizerTest {
 
     @Test
     public void testGetTokensWithPrimes() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new TokenizerImpl();
         List<Token> correct = Collections.singletonList(new Token(
                 Collections.singletonList(new PipeSplitCommand(
                         Arrays.asList(new Entity(EntityType.SIMPLE_PART, "echo 123 "),
@@ -40,7 +42,7 @@ public class TokenizerTest {
 
     @Test
     public void testGetTokensWithDoublePrimes() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new TokenizerImpl();
         List<Token> correct = Collections.singletonList(new Token(
                 Collections.singletonList(new PipeSplitCommand(
                         Arrays.asList(new Entity(EntityType.SIMPLE_PART, "echo 123 "),
@@ -52,12 +54,11 @@ public class TokenizerTest {
 
     @Test
     public void testGetTokensWithBothPrimes() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new TokenizerImpl();
         List<Token> correct = Collections.singletonList(new Token(
                 Collections.singletonList(new PipeSplitCommand(
                         Arrays.asList(new Entity(EntityType.SIMPLE_PART, "echo 123 "),
                                 new Entity(EntityType.PART_IN_DOUBLE_PRIME, "123"),
-                                new Entity(EntityType.SIMPLE_PART, " "),
                                 new Entity(EntityType.PART_IN_PRIME, "123"))
                 ))
         ));
@@ -67,7 +68,7 @@ public class TokenizerTest {
 
     @Test
     public void testGetTokensWithCommands() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new TokenizerImpl();
         List<Token> correct = Arrays.asList(new Token(
                         Collections.singletonList(new PipeSplitCommand(
                                 Collections.singletonList(new Entity(EntityType.SIMPLE_PART, "echo 123"))))),
@@ -79,18 +80,11 @@ public class TokenizerTest {
         assertEquals(correct, tokenizer.getTokens("echo 123; cat \"1.txt\""));
     }
 
-    @Test
-    public void testGetTokensWithPipe() {
-        Tokenizer tokenizer = new Tokenizer();
-        List<Token> correct = Collections.singletonList(new Token(
-                Arrays.asList(new PipeSplitCommand(
-                                Collections.singletonList(new Entity(EntityType.SIMPLE_PART, "echo 123"))),
-                        new PipeSplitCommand(
-                                Arrays.asList(new Entity(EntityType.SIMPLE_PART, "cat "),
-                                        new Entity(EntityType.PART_IN_DOUBLE_PRIME, "1.txt"))
-                        ))));
 
-        assertEquals(correct, tokenizer.getTokens("echo 123| cat \"1.txt\""));
+    @Test(expected = TokenizerException.class)
+    public void testGetTokensWithIncorrectPipe() {
+        Tokenizer tokenizer = new TokenizerImpl();
+        tokenizer.getTokens("cat 1.txt |");
     }
 
 

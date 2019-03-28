@@ -23,13 +23,13 @@ public class Assignment {
     public boolean updateVariables(final List<Entity> entities) {
         if (entities == null
                 || entities.size() == 0
-                || entities.get(0).getType() !=  EntityType.SIMPLE_PART) {
+                || entities.get(0).getType() != EntityType.SIMPLE_PART) {
             return false;
         }
         final List<Entity> entitiesCopy = new ArrayList<>(entities);
         final String firstEntity = entitiesCopy.get(0).getValue();
         entitiesCopy.remove(0);
-        final Pattern pattern = Pattern.compile("^"  + IDENTIFIER_PATTERN + "=");
+        final Pattern pattern = Pattern.compile("^" + IDENTIFIER_PATTERN + "=");
         Matcher matcher = pattern.matcher(firstEntity);
         if (!matcher.find()) {
             return false;
@@ -41,7 +41,7 @@ public class Assignment {
         }
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(residue);
-        for (int i = 1; i <entities.size(); i++) {
+        for (int i = 1; i < entities.size(); i++) {
             final Entity entity = entities.get(i);
             if (entity.getType() == EntityType.SIMPLE_PART && isExistSpace(residue)) {
                 return false;
@@ -56,10 +56,7 @@ public class Assignment {
         final String inputTrim = input.trim();
         final Pattern patternSpace = Pattern.compile("\\s+");
         final Matcher matcher = patternSpace.matcher(inputTrim);
-        if (!matcher.find()) {
-            return false;
-        }
-        return inputTrim.substring(matcher.end()).length() != 0;
+        return matcher.find();
     }
 
 }

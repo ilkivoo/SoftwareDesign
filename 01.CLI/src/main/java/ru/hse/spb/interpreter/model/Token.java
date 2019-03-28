@@ -10,7 +10,7 @@ public class Token {
         this.commands = commands;
     }
 
-    public List<PipeSplitCommand> getcommands() {
+    public List<PipeSplitCommand> getCommands() {
         return commands;
     }
 
