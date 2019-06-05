@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.6'
 services:
   localstack:
     image: localstack/localstack:latest
@@ -6,27 +6,23 @@ services:
       - "4576:4576"
     environment:
       - SERVICES=sqs
-  create_and_initialize_queues:
+  create_queues:
     build: .
-    command: ["python", "create_queue.py", "A", "B"]
+    command: python create_queue.py A B
     depends_on:
       - localstack
-    links:
-      - localstack
-  init:
+  start_chatting:
     build: .
-    command: ["python", "init_request.py", "B", "1"]
+    command: python init_request.py B 1
     depends_on:
-      - create_and_initialize_queues
-  a_to_b:
+      - create_queues
+  run_a:
     build: .
-    command: ["python", "ping_pong.py", "A", "B"]
+    command: python ping_pong.py A B
     depends_on:
-      - create_and_initialize_queues
-      - init
-  b_to_a:
+      - start_chatting
+  run_b:
     build: .
-    command: ["python", "ping_pong.py", "B", "A"]
+    command: python ping_pong.py B A
     depends_on:
-      - create_and_initialize_queues
-      - init
+      - start_chatting
