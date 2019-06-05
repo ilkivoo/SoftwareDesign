@@ -4,9 +4,10 @@ import boto3
 endpoint_url = 'http://localstack:4576'
 aws_access_key_id = 'aws_access_key_id'
 aws_secret_access_key = 'aws_secret_access_key'
+region_name = 'us-west-2'
+sqs = boto3.resource('sqs', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
+                     aws_secret_access_key=aws_secret_access_key, region_name=region_name)
 
-sqs = boto3.resource('sqs', endpoint_url='http://localstack:4576', aws_access_key_id=aws_access_key_id,
-                     aws_secret_access_key=aws_secret_access_key)
 if len(sys.argv) != 3:
     print("Expected queue_name and message")
     exit(1)
