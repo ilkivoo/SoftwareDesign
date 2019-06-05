@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4576:4576"
+    environment:
+      - SERVICES=sqs
+  create_and_initialize_queues:
+    build: .
+    command: ["python", "create_queue.py", "A", "B"]
+    depends_on:
+      - localstack
+    links:
+      - localstack
+  init:
+    build: .
+    command: ["python", "init_request.py", "B", "1"]
+    depends_on:
+      - create_and_initialize_queues
+  a_to_b:
+    build: .
+    command: ["python", "ping_pong.py", "A", "B"]
+    depends_on:
+      - create_and_initialize_queues
+      - init
+  b_to_a:
+    build: .
+    command: ["python", "ping_pong.py", "B", "A"]
+    depends_on:
+      - create_and_initialize_queues
+      - init
