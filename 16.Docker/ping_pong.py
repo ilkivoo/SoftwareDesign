@@ -20,8 +20,9 @@ while True:
     except:
         print("Queue not created")
 while True:
-    for message in queue_from.receive_messages():
-        new_num = str(int(message.body) + 1)
-        print("Queue " + queue_name_from + " received " + message.body, flush=True)
-        message.delete()
-        queue_to.send_message(MessageBody=new_num)
+    for receive_message in queue_from.receive_messages():
+        request_num = int(receive_message.body)
+        response_num = str(request_num + 1)
+        print("Queue: request_num=" + str(request_num) + ", response_num = " + response_num, flush=True)
+        receive_message.delete()
+        queue_to.send_message(MessageBody=response_num)
