@@ -1,0 +1,18 @@
+version: '3.6'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4576:4576"
+    environment:
+      - SERVICES=sqs
+  run_a:
+    build: .
+    command: python ping_pong.py A B
+    depends_on:
+      - localstack
+  run_b:
+    build: .
+    command: python ping_pong.py B A
+    depends_on:
+      - localstack
